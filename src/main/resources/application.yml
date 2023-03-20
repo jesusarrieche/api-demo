@@ -1,0 +1,28 @@
+
+server:
+  port: 8080
+
+logging:
+  file:
+    name: logs/${spring.application.name}.log
+  level:
+    root: info
+    org.springframework.web: debug
+    org.hibernate: error
+
+
+spring:
+  application:
+    name: devsu-api
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    url: jdbc:postgresql://localhost:5432/api
+    username: postgres
+    password: jd1234
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
