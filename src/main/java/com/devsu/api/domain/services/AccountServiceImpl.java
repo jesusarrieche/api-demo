@@ -10,6 +10,8 @@ import com.devsu.api.domain.repositories.AccountRepository;
 import com.devsu.api.domain.repositories.ClientRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -29,10 +31,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountDTO findAcocountByAcocuntNumber(String accountNumber) {
-        Account storedAccount = this.accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("No se encontro cuenta con con numero: %s", accountNumber))
-                );
+        Account storedAccount = getStoredAccount(accountNumber);
 
         return this.accountMapper.toAccountDTO(storedAccount);
     }
@@ -43,15 +42,9 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountDTO createAccount(AccountDTO accountDTO) {
-        this.accountRepository.findByAccountNumber(accountDTO.getNumeroCuenta())
-                .ifPresent((e) -> {
-                    throw new BadRequestException(String.format("Ya existe una cuenta con el numero: %s", accountDTO.getNumeroCuenta()));
-                });
+        validateAccountNumberExists(this.accountRepository.findByAccountNumber(accountDTO.getNumeroCuenta()), accountDTO);
 
-        Client storedClient = this.clientRepository.findByIdentification(accountDTO.getIdentificacionCliente())
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("No se encontro Cliente con indentificacion: %s", accountDTO.getIdentificacionCliente()))
-                );
+        Client storedClient = getStoredClient(accountDTO);
 
         Account newAccount = this.accountMapper.toAccount(accountDTO);
         newAccount.setClient(storedClient);
@@ -66,17 +59,11 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public AccountDTO updateAccount(String accountNumber, AccountDTO accountDTO) {
-        Account storedAccount = this.accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("No se encontro cuenta con con numero: %s", accountNumber))
-                );
+        Account storedAccount = getStoredAccount(accountNumber);
 
-        this.accountRepository.findByAccountNumberAndIdNot(accountDTO.getNumeroCuenta(), storedAccount.getId())
-                .ifPresent(
-                        (e) -> {
-                            throw new BadRequestException(String.format("Ya existe una cuenta con el numero: %s", accountDTO.getNumeroCuenta()));
-                        }
-                );
+        validateAccountNumberExists(this.accountRepository.findByAccountNumberAndIdNot(accountDTO.getNumeroCuenta(), storedAccount.getId()), accountDTO);
+
+        getStoredClient(accountDTO);
 
         // update
         this.accountMapper.updateAccountFromAccountDTO(accountDTO, storedAccount);
@@ -86,14 +73,48 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * @param accountNumber
+     * @param accountDTO
+     * @return
+     */
+    @Override
+    public AccountDTO updateAccountNumber(String accountNumber, AccountDTO accountDTO) {
+        Account storedAccount = getStoredAccount(accountNumber);
+
+        validateAccountNumberExists(this.accountRepository.findByAccountNumberAndIdNot(accountDTO.getNumeroCuenta(), storedAccount.getId()), accountDTO);
+        return null;
+    }
+
+    /**
+     * @param accountNumber
      */
     @Override
     public void deleteAccountByAccountNumber(String accountNumber) {
-        Account toDelete = this.accountRepository.findByAccountNumber(accountNumber)
+        Account toDelete = getStoredAccount(accountNumber);
+
+        this.accountRepository.deleteById(toDelete.getId());
+    }
+
+
+    private Account getStoredAccount(String accountNumber) {
+        Account storedAccount = this.accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(
                         () -> new NotFoundException(String.format("No se encontro cuenta con con numero: %s", accountNumber))
                 );
+        return storedAccount;
+    }
 
-        this.accountRepository.deleteById(toDelete.getId());
+    private void validateAccountNumberExists(Optional<Account> accountRepository, AccountDTO accountDTO) {
+        accountRepository
+                .ifPresent((e) -> {
+                    throw new BadRequestException(String.format("Ya existe una cuenta con el numero: %s", accountDTO.getNumeroCuenta()));
+                });
+    }
+
+    private Client getStoredClient(AccountDTO accountDTO) {
+        Client storedClient = this.clientRepository.findByIdentification(accountDTO.getIdentificacionCliente())
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("No se encontro Cliente con indentificacion: %s", accountDTO.getIdentificacionCliente()))
+                );
+        return storedClient;
     }
 }

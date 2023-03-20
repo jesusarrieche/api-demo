@@ -7,5 +7,5 @@ import com.devsu.api.domain.entities.Movement;
 public interface MovementStrategy {
     Movement create(Account account, MovementDTO movementDTO);
 
-    Movement update(Account account, MovementDTO movementDTO);
+    void delete(Movement movement);
 }

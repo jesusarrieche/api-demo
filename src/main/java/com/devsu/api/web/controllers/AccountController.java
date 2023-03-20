@@ -2,6 +2,7 @@ package com.devsu.api.web.controllers;
 
 import com.devsu.api.application.dtos.AccountDTO;
 import com.devsu.api.application.validations.Create;
+import com.devsu.api.application.validations.Update;
 import com.devsu.api.domain.services.AccountService;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class AccountController {
     @PutMapping("/{accountNumber}")
     public ResponseEntity<AccountDTO> updateAccount(
             @PathVariable @NotNull String accountNumber,
-            @Validated @RequestBody AccountDTO accountDTO
+            @Validated(Update.class) @RequestBody AccountDTO accountDTO
     ) {
         log.info("PUT - /cuentas/{}", accountNumber);
 

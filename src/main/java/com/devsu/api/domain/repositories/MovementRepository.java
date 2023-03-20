@@ -34,12 +34,4 @@ public interface MovementRepository extends JpaRepository<Movement, Long> {
             @Param("aux") Integer aux
     );
 
-
-//    @Query("SELECT new com.example.dto.MovementsSummary(SUM(m.amount), COUNT(m)) " +
-//            "FROM Movement m " +
-//            "WHERE m.date BETWEEN :startDate AND :endDate " +
-//            "AND m.amount " + (isNegative ? "< 0" : "> 0") +
-//            "AND m.account.accountNumber = :accountNumber")
-//    MovementsSummary getMovementsSummary(LocalDate startDate, LocalDate endDate, boolean isNegative, String accountNumber)
-
 }

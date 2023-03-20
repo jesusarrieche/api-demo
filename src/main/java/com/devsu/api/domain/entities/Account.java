@@ -31,6 +31,6 @@ public class Account {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.MERGE) // Importante resaltar que coloque CascadeType.ALL
+    @OneToMany(mappedBy = "account", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<Movement> movements;
 }

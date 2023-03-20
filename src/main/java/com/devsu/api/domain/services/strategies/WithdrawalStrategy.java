@@ -8,7 +8,6 @@ import com.devsu.api.domain.enums.MovementType;
 import com.devsu.api.domain.repositories.MovementRepository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class WithdrawalStrategy implements MovementStrategy {
 
@@ -34,7 +33,7 @@ public class WithdrawalStrategy implements MovementStrategy {
 
         BigDecimal totalWithdrawalAmount = this.movementRepository.getTotalWithdrawalAmountByDayAndAccountNumber(movementDTO.getFecha(), account.getAccountNumber());
 
-        if(totalWithdrawalAmount.abs().compareTo(this.withdrawalLimit) >= 0)
+        if(totalWithdrawalAmount.abs().compareTo(this.withdrawalLimit) >= 0 || movementDTO.getMonto().abs().compareTo(this.withdrawalLimit) > 0)
             throw new BadRequestException(String.format("Cupo diario Excedido. Cantidad disponible: %s", this.withdrawalLimit.add(totalWithdrawalAmount)));
 
 
@@ -52,12 +51,18 @@ public class WithdrawalStrategy implements MovementStrategy {
     }
 
     /**
-     * @param account
-     * @param movementDTO
-     * @return
+     * @param movement
      */
     @Override
-    public Movement update(Account account, MovementDTO movementDTO) {
-        return null;
+    public void delete(Movement movement) {
+        Account account = movement.getAccount();
+
+        BigDecimal newBalance = account.getBalance().add(movement.getAmount().abs());
+
+        account.setBalance(newBalance);
+        this.movementRepository.save(movement);
+
+        this.movementRepository.delete(movement);
     }
+
 }

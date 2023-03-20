@@ -17,7 +17,7 @@ public class Client extends Person {
 
     private Boolean status;
 
-    @OneToMany(mappedBy = "client")
+    @OneToMany(mappedBy = "client", cascade = CascadeType.REMOVE)
     private List<Account> accounts;
 
 

@@ -23,13 +23,19 @@ public class MovementServiceImpl implements MovementService {
 
     private MovementMapper movementMapper;
 
-    private final BigDecimal max = new BigDecimal(1000);
-
-
     public MovementServiceImpl(MovementRepository movementRepository, AccountRepository accountRepository, MovementMapper movementMapper) {
         this.movementRepository = movementRepository;
         this.accountRepository = accountRepository;
         this.movementMapper = movementMapper;
+    }
+
+    /**
+     * @param movementId
+     * @return
+     */
+    @Override
+    public MovementDTO findMovementById(Long movementId) {
+        return this.movementMapper.toMovementDTO(getMovement(movementId));
     }
 
     /**
@@ -43,26 +49,13 @@ public class MovementServiceImpl implements MovementService {
         Account account = this.accountRepository.findByAccountNumber(movementDTO.getNumeroCuenta())
                 .orElseThrow(() -> new NotFoundException(String.format("No se encontro cuenta con numero: %s", movementDTO.getNumeroCuenta())));
 
-        MovementStrategy strategy = this.getStrategy(movementDTO);
+        MovementStrategy strategy = this.getStrategy(movementDTO.getMonto());
 
         Movement newMovement = strategy.create(account, movementDTO);
 
         return this.movementMapper.toMovementDTO(newMovement);
     }
 
-    /**
-     * @param movementId
-     * @param movementDTO
-     * @return
-     */
-    @Override
-    @Transactional
-    public MovementDTO editMovement(Long movementId, MovementDTO movementDTO) {
-
-
-
-        return null;
-    }
 
     /**
      * @param movementId
@@ -70,12 +63,24 @@ public class MovementServiceImpl implements MovementService {
     @Override
     public void deleteMovement(Long movementId) {
 
+        Movement movement = getMovement(movementId);
+
+        MovementStrategy strategy = getStrategy(movement.getAmount());
+        strategy.delete(movement);
+
     }
-    private MovementStrategy getStrategy(MovementDTO movementDTO) {
-        if (movementDTO.getMonto().compareTo(BigDecimal.ZERO) < 0) {
+
+    private MovementStrategy getStrategy(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
             return new WithdrawalStrategy(this.movementRepository);
         } else {
             return new DepositStrategy(this.movementRepository);
         }
+    }
+
+    private Movement getMovement(Long movementId) {
+        Movement movement = this.movementRepository.findById(movementId)
+                .orElseThrow(() -> new NotFoundException(String.format("No se encontro movimiento con ID: %s", movementId)));
+        return movement;
     }
 }

@@ -7,5 +7,7 @@ public interface AccountService {
     public AccountDTO findAcocountByAcocuntNumber(String accountNumber);
     public AccountDTO createAccount(AccountDTO accountDTO);
     public AccountDTO updateAccount(String accountNumber, AccountDTO accountDTO);
+
+    public AccountDTO updateAccountNumber(String accountNumber, AccountDTO accountDTO);
     public void deleteAccountByAccountNumber(String accountNumber);
 }

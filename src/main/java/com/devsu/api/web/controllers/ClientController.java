@@ -2,9 +2,9 @@ package com.devsu.api.web.controllers;
 
 import com.devsu.api.application.dtos.ClientDTO;
 import com.devsu.api.application.validations.Create;
+import com.devsu.api.application.validations.PartialUpdate;
 import com.devsu.api.application.validations.Update;
 import com.devsu.api.domain.services.ClientService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,12 +45,22 @@ public class ClientController {
 
     @PutMapping("/{identification}")
     public ResponseEntity<ClientDTO> updateClient(
-            @PathVariable @NotNull String identification,
+            @PathVariable String identification,
             @Validated(Update.class) @RequestBody ClientDTO clientDTO
     ) {
         log.info("PUT - /clientes/{}", identification);
 
         return new ResponseEntity<>(this.clientService.updateClient(identification, clientDTO), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{identification}")
+    public ResponseEntity<ClientDTO> updateClientPassword(
+            @PathVariable String identification,
+            @Validated(PartialUpdate.class) @RequestBody ClientDTO clientDTO
+    ) {
+        log.info("PATCH - /clientes/{}", identification, clientDTO);
+
+        return new ResponseEntity<>(this.clientService.updateClientPassword(identification, clientDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{identification}")

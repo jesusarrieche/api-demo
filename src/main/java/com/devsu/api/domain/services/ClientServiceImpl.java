@@ -66,10 +66,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional
     public ClientDTO updateClient(String identification, ClientDTO clientDTO) {
 
-        Client storedClient = this.clientRepository.findByIdentification(identification)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("No se encontro Cliente con Identification: %s", identification))
-                );
+        Client storedClient = getStoredClient(identification);
 
         this.clientRepository.findByIdentificationAndPersonIdNot(clientDTO.getIdentificacion(), storedClient.getPersonId())
                 .ifPresent(
@@ -84,16 +81,38 @@ public class ClientServiceImpl implements ClientService {
         return this.clientMapper.toClientDTO(this.clientRepository.save(storedClient));
     }
 
+
+    /**
+     * @param identification
+     * @param clientDTO
+     * @return
+     */
+    @Override
+    public ClientDTO updateClientPassword(String identification, ClientDTO clientDTO) {
+        Client storedClient = getStoredClient(identification);
+
+        // update
+        storedClient.setPassword(clientDTO.getContrasena());
+
+        return this.clientMapper.toClientDTO(this.clientRepository.save(storedClient));
+    }
+
     /**
      * @param identification
      */
     @Override
     public void deleteClientByIdentification(String identification) {
-        Client toDelete = this.clientRepository.findByIdentification(identification)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("No se encontro Cliente con Identification: %s", identification))
-                );
+        Client toDelete = getStoredClient(identification);
 
         this.clientRepository.deleteById(toDelete.getPersonId());
     }
+
+    private Client getStoredClient(String identification) {
+        Client storedClient = this.clientRepository.findByIdentification(identification)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("No se encontro Cliente con Identification: %s", identification))
+                );
+        return storedClient;
+    }
+
 }

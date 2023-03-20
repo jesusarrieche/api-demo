@@ -1,6 +1,7 @@
 package com.devsu.api.application.dtos;
 
 import com.devsu.api.application.validations.Create;
+import com.devsu.api.application.validations.PartialUpdate;
 import com.devsu.api.application.validations.Update;
 import com.devsu.api.domain.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,21 +18,21 @@ import java.math.BigDecimal;
 @Data
 public class AccountDTO {
 
-    @NotBlank(groups = {Create.class})
+    @NotBlank(groups = {Create.class, Update.class})
     private String identificacionCliente;
-    @NotBlank(groups = {Create.class})
+    @NotBlank(groups = {Create.class, Update.class, PartialUpdate.class})
     @JsonProperty("Numero Cuenta")
     private String numeroCuenta;
 
-    @NotNull(groups = {Create.class})
+    @NotNull(groups = {Create.class, Update.class})
     @Enumerated(EnumType.STRING)
     private AccountType tipo;
 
-    @NotNull(groups = {Create.class})
+    @NotNull(groups = {Create.class, Update.class})
     @DecimalMin(value = "0.01")
     private BigDecimal saldo;
 
-    @NotNull(groups = {Create.class})
+    @NotNull(groups = {Create.class, Update.class})
     private Boolean estado;
 
 }
